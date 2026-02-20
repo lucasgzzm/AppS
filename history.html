@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SaldoSmart — Historial</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin:0; background:#0b0f17; color:#e8eefc; }
+    .wrap{ max-width: 980px; margin: 0 auto; padding: 20px; }
+    .top{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .nav a{ color:#e8eefc; text-decoration:none; padding:10px 12px; border:1px solid #2a3550; border-radius:12px; }
+    .nav a:hover{ background:#121a2b; }
+    .card{ margin-top:16px; background:#0f1626; border:1px solid #24314d; border-radius:18px; padding:16px; }
+    table{ width:100%; border-collapse:collapse; margin-top:10px; }
+    th,td{ text-align:left; padding:10px; border-bottom:1px solid #1f2a43; font-size:14px; vertical-align:top; }
+    th{ color:#a9b6d3; font-weight:700; }
+    .btn{ display:inline-block; padding:12px 14px; border-radius:14px; border:1px solid #2a3550; background:#121a2b; color:#e8eefc; cursor:pointer; text-decoration:none; }
+    .btn:hover{ filter:brightness(1.08); }
+    .danger{ border-color:#6b2b2b; background:#1d0f12; }
+    .tag{ font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #2a3550; display:inline-block; }
+    .muted{ color:#a9b6d3; font-size:14px; }
+    .search{ width:100%; padding:12px 12px; border-radius:14px; border:1px solid #2a3550; background:#0b1222; color:#e8eefc; outline:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div style="font-weight:900;">📒 Historial</div>
+        <div class="muted">Filtra y administra tus gastos</div>
+      </div>
+      <div class="nav">
+        <a href="index.html">Inicio</a>
+        <a href="add.html">+ Agregar gasto</a>
+        <a href="history.html">Historial</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="muted">Buscar por concepto</label>
+      <input id="q" class="search" placeholder="Ej: 'super', 'bencina', 'netflix'..." />
+
+      <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button id="btnBorrarTodo" class="btn danger">Borrar TODO</button>
+        <span id="msg" class="muted"></span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Monto</th>
+            <th>Tipo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  const KEY = "saldosmart_v1";
+
+  function moneyCLP(n){
+    const num = Number(n || 0);
+    return num.toLocaleString("es-CL", { style:"currency", currency:"CLP", maximumFractionDigits:0 });
+  }
+  function load(){
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return { saldoBase: 0, gastos: [] };
+    try { return JSON.parse(raw); } catch { return { saldoBase: 0, gastos: [] }; }
+  }
+  function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function render(){
+    const data = load();
+    const q = (document.getElementById("q").value || "").toLowerCase().trim();
+    const tbody = document.getElementById("rows");
+    tbody.innerHTML = "";
+
+    const list = [...data.gastos].reverse().filter(g => {
+      if(!q) return true;
+      return String(g.concepto||"").toLowerCase().includes(q);
+    });
+
+    if(list.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">No hay gastos que mostrar.</td></tr>`;
+      return;
+    }
+
+    for(const g of list){
+      const tipoLabel = g.tipo === "necesario" ? "Necesario" : "No tanto";
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${escapeHtml(g.fecha || "")}</td>
+          <td>${escapeHtml(g.concepto || "")}</td>
+          <td>${moneyCLP(g.monto)}</td>
+          <td><span class="tag">${tipoLabel}</span></td>
+          <td><button class="btn" data-del="${escapeHtml(g.id)}">Eliminar</button></td>
+        </tr>
+      `);
+    }
+
+    tbody.querySelectorAll("button[data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-del");
+        const data2 = load();
+        data2.gastos = data2.gastos.filter(x => String(x.id) !== String(id));
+        save(data2);
+        render();
+      });
+    });
+  }
+
+  document.getElementById("q").addEventListener("input", render);
+
+  document.getElementById("btnBorrarTodo").addEventListener("click", () => {
+    const ok = confirm("¿Seguro? Se borrarán todos tus gastos y saldo base.");
+    if(!ok) return;
+    localStorage.removeItem(KEY);
+    document.getElementById("msg").textContent = "Listo: datos borrados.";
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SaldoSmart — Agregar gasto</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin:0; background:#0b0f17; color:#e8eefc; }
+    .wrap{ max-width: 820px; margin: 0 auto; padding: 20px; }
+    .top{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .nav a{ color:#e8eefc; text-decoration:none; padding:10px 12px; border:1px solid #2a3550; border-radius:12px; }
+    .nav a:hover{ background:#121a2b; }
+    .card{ margin-top:16px; background:#0f1626; border:1px solid #24314d; border-radius:18px; padding:16px; }
+    label{ display:block; margin-top:12px; margin-bottom:6px; font-size:14px; color:#a9b6d3; }
+    .input, select{ width:100%; padding:12px 12px; border-radius:14px; border:1px solid #2a3550; background:#0b1222; color:#e8eefc; outline:none; }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width:720px){ .row{ grid-template-columns:1fr; } }
+    .btn{ display:inline-block; padding:12px 14px; border-radius:14px; border:1px solid #2a3550; background:#121a2b; color:#e8eefc; cursor:pointer; }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .muted{ color:#a9b6d3; font-size: 14px; }
+    .ok{ color:#9ee6b8; }
+    .bad{ color:#ffb4b4; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div style="font-weight:900;">➕ Agregar gasto</div>
+        <div class="muted">Se descuenta automáticamente del saldo</div>
+      </div>
+      <div class="nav">
+        <a href="index.html">Inicio</a>
+        <a href="add.html">Agregar</a>
+        <a href="history.html">Historial</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="concepto">Concepto</label>
+          <input id="concepto" class="input" placeholder="Ej: Supermercado / Bencina / Streaming" />
+        </div>
+        <div>
+          <label for="monto">Monto (CLP)</label>
+          <input id="monto" class="input" inputmode="decimal" placeholder="Ej: 12990" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="tipo">Tipo</label>
+          <select id="tipo">
+            <option value="necesario">Necesario</option>
+            <option value="no_tanto">No tanto</option>
+          </select>
+        </div>
+        <div>
+          <label for="fecha">Fecha</label>
+          <input id="fecha" class="input" type="date" />
+        </div>
+      </div>
+
+      <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button id="guardar" class="btn">Guardar gasto</button>
+        <a class="btn" href="index.html" style="text-decoration:none; line-height: 22px;">Volver</a>
+      </div>
+
+      <div id="msg" class="muted" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+<script>
+  const KEY = "saldosmart_v1";
+  function load(){
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return { saldoBase: 0, gastos: [] };
+    try { return JSON.parse(raw); } catch { return { saldoBase: 0, gastos: [] }; }
+  }
+  function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+  // fecha por defecto: hoy
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth()+1).padStart(2,"0");
+  const dd = String(hoy.getDate()).padStart(2,"0");
+  document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
+
+  document.getElementById("guardar").addEventListener("click", () => {
+    const concepto = document.getElementById("concepto").value.trim();
+    const montoRaw = document.getElementById("monto").value.replace(/\./g,"").replace(/,/g,"").trim();
+    const monto = Number(montoRaw);
+    const tipoSel = document.getElementById("tipo").value;
+    const fecha = document.getElementById("fecha").value || `${yyyy}-${mm}-${dd}`;
+
+    const msg = document.getElementById("msg");
+    msg.className = "muted";
+
+    if(!concepto){
+      msg.textContent = "Pon un concepto (ej: 'Pan', 'Bencina').";
+      msg.className = "bad";
+      return;
+    }
+    if(!Number.isFinite(monto) || monto <= 0){
+      msg.textContent = "Pon un monto válido (mayor a 0).";
+      msg.className = "bad";
+      return;
+    }
+
+    const data = load();
+    data.gastos.push({
+      id: crypto.randomUUID?.() || String(Date.now()),
+      concepto,
+      monto: Math.round(monto),
+      tipo: (tipoSel === "necesario") ? "necesario" : "no_tanto",
+      fecha
+    });
+    save(data);
+
+    msg.textContent = "✅ Gasto guardado y descontado del saldo.";
+    msg.className = "ok";
+
+    document.getElementById("concepto").value = "";
+    document.getElementById("monto").value = "";
+    document.getElementById("tipo").value = "necesario";
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SaldoSmart — Inicio</title>
+
+<style>
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+body {
+  margin: 0;
+  background: #0b0f17;
+  color: #e8eefc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 850px;
+  padding: 20px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.nav a {
+  color: #e8eefc;
+  text-decoration: none;
+  padding: 8px 12px;
+  border: 1px solid #2a3550;
+  border-radius: 12px;
+  margin-left: 6px;
+}
+
+.nav a:hover {
+  background: #121a2b;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+@media (max-width: 860px){
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: #0f1626;
+  border: 1px solid #24314d;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.muted {
+  color: #a9b6d3;
+  font-size: 14px;
+}
+
+.big {
+  font-size: 36px;
+  font-weight: 900;
+  margin: 6px 0 12px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #2a3550;
+  background: #0b1222;
+}
+
+.pill b {
+  display: block;
+  font-size: 18px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid #2a3550;
+  background: #121a2b;
+  color: #e8eefc;
+  text-decoration: none;
+  cursor: pointer;
+  
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.input {
+  width: 92%;
+  padding: 12px;
+  border-radius: 14px;
+  border: 5px solid #2a3550;
+  background: #0b1222;
+  color: #e8eefc;
+  outline: none;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #a9b6d3;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+th, td {
+  padding: 8px;
+  border-bottom: 1px solid #1f2a43;
+  font-size: 14px;
+}
+
+th {
+  color: #a9b6d3;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #2a3550;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="top">
+  <div>
+    <div class="brand">💳 SaldoSmart</div>
+    <div class="muted">Organiza tu saldo: necesarios vs no tanto</div>
+  </div>
+  <div class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="add.html">+ Agregar gasto</a>
+    <a href="history.html">Historial</a>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="muted">SALDO ACTUAL</div>
+    <div id="saldo" class="big">$0</div>
+
+    <div class="row">
+      <div class="pill">
+        <span class="muted">Necesarios</span>
+        <b id="sumNecesarios">$0</b>
+      </div>
+      <div class="pill">
+        <span class="muted">No tanto</span>
+        <b id="sumNoTanto">$0</b>
+      </div>
+      <div class="pill">
+        <span class="muted">Total gastos</span>
+        <b id="sumTotal">$0</b>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #1f2a43;margin:16px 0;">
+
+    <label>Actualizar saldo base</label>
+    <input id="nuevoSaldo" class="input" placeholder="Ej: 250000">
+
+    <div style="margin-top:12px;">
+      <button id="btnGuardarSaldo" class="btn">Guardar saldo</button>
+    </div>
+
+    <div id="msg" class="muted" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="muted">Últimos 5 gastos</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Monto</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody id="ultimos"></tbody>
+    </table>
+
+    <div style="margin-top:12px;">
+      <a class="btn" href="add.html">Agregar uno nuevo</a>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const KEY = "saldosmart_v1";
+
+function moneyCLP(n){
+  return Number(n || 0).toLocaleString("es-CL", {style:"currency",currency:"CLP",maximumFractionDigits:0});
+}
+
+function load(){
+  const raw = localStorage.getItem(KEY);
+  return raw ? JSON.parse(raw) : { saldoBase: 0, gastos: [] };
+}
+
+function save(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function render(){
+  const data = load();
+  let necesarios = 0;
+  let noTanto = 0;
+
+  data.gastos.forEach(g=>{
+    if(g.tipo === "necesario") necesarios += g.monto;
+    else noTanto += g.monto;
+  });
+
+  const total = necesarios + noTanto;
+  const saldoActual = data.saldoBase - total;
+
+  document.getElementById("saldo").textContent = moneyCLP(saldoActual);
+  document.getElementById("sumNecesarios").textContent = moneyCLP(necesarios);
+  document.getElementById("sumNoTanto").textContent = moneyCLP(noTanto);
+  document.getElementById("sumTotal").textContent = moneyCLP(total);
+
+  const tbody = document.getElementById("ultimos");
+  tbody.innerHTML = "";
+
+  data.gastos.slice(-5).reverse().forEach(g=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${g.concepto}</td>
+        <td>${moneyCLP(g.monto)}</td>
+        <td><span class="tag">${g.tipo==="necesario"?"Necesario":"No tanto"}</span></td>
+      </tr>`;
+  });
+}
+
+document.getElementById("btnGuardarSaldo").addEventListener("click", ()=>{
+  const val = document.getElementById("nuevoSaldo").value.replace(/\./g,"");
+  const num = Number(val);
+  if(!num) return;
+  const data = load();
+  data.saldoBase = num;
+  save(data);
+  render();
+  document.getElementById("nuevoSaldo").value="";
+});
+
+render();
+</script>
+
+</body>
+</html>
