@@ -45,6 +45,7 @@ body{
 .wrap{
   width:100%;
   max-width: 980px;
+  margin: 0 auto;
 }
 
 /* ===== Top bar moderno ===== */
@@ -153,27 +154,23 @@ body{
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-.stat{
-  background: rgba(10, 14, 28, .55);
-  border: 1px solid var(--stroke2);
-  border-radius: 18px;
-  padding: 14px;
-  min-height: 78px;
-}
-.stat-title{
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .2px;
-}
-.stat-value{
-  font-size: 22px;
-  font-weight: 950;
-  margin-top: 8px;
-}
+
+/* IMPORTANTE: NO cambiar a 2 columnas en móvil */
 @media (max-width: 520px){
-  .stats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stats .stat:nth-child(3){ grid-column: 1 / -1; }
+  .stats{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .stat{
+    padding: 12px;
+    min-height: 72px;
+  }
+  .stat-title{
+    font-size: 12px;
+  }
+  .stat-value{
+    font-size: 18px;
+  }
 }
 
 /* ===== Inputs iPhone FIX ===== */
