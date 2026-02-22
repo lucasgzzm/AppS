@@ -105,19 +105,59 @@ body{
 .pill b{ display:block; font-size:18px; }
 
 /* Inputs / Select / Date (todos iguales) */
+/* ===== Inputs iPhone FIX (mismos tamaños/altura/letra) ===== */
 .input,
 select,
 input[type="date"]{
-  width:100%;
-  height: var(--h);
-  padding: 0 var(--pad-x);
+  width: 100%;
+  min-height: var(--h);            /* en vez de height fijo */
+  padding: 12px 14px;             /* padding real (mejor en iOS) */
   border-radius: var(--radius-sm);
-  border:1px solid var(--border2);
+  border: 1px solid var(--border2);
   background: var(--field);
   color: var(--text);
-  outline:none;
-  font-size: var(--fs-base);
-  line-height: var(--h);
+  outline: none;
+
+  font-size: 16px;                /* CLAVE: evita zoom iOS */
+  line-height: 1.2;               /* evita texto descentrado */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Quita estilos raros nativos iOS */
+.input,
+select,
+input[type="date"]{
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Placeholder más consistente */
+.input::placeholder{
+  color:#7f8fb4;
+  opacity: 1;
+}
+
+/* Date en iPhone: se respeta tema oscuro y se alinea */
+input[type="date"]{
+  color-scheme: dark;
+}
+
+/* Select: padding y cursor */
+select{
+  cursor: pointer;
+  padding-right: 40px; /* espacio para la flecha */
+}
+
+/* Flecha custom del select (se ve igual en todas partes) */
+select{
+  background-image:
+    linear-gradient(45deg, transparent 50%, #a9b6d3 50%),
+    linear-gradient(135deg, #a9b6d3 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
 }
 
 .input::placeholder{ color:#7f8fb4; }
