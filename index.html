@@ -1,160 +1,141 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <link rel="stylesheet" href="./styles.css">
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SaldoSmart — Inicio</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SaldoSmart</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#0b0f17">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SaldoSmart">
-  <link rel="apple-touch-icon" href="./icon-192.png">
-
+<link rel="stylesheet" href="./styles.css">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b1020">
+<link rel="apple-touch-icon" href="./icon-192.png">
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div>
-        <div class="brand">💳 SaldoSmart</div>
-        <div class="muted">Organiza tu saldo: necesarios vs no tanto</div>
-      </div>
+<div class="wrap">
 
-      <div class="nav">
-        <a href="./index.html">Inicio</a>
-        <a href="./add.html">+ Agregar gasto</a>
-        <a href="./history.html">Historial</a>
+  <div class="topbar">
+    <div class="brand">
+      <img src="./icon-192.png">
+      <div>
+        <div class="title">SaldoSmart</div>
+        <div class="sub">Organiza tu saldo</div>
       </div>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="muted">Saldo actual</div>
-        <div id="saldo" class="big">$0</div>
-
-        <div class="row">
-          <div class="pill"><span class="muted">Necesarios</span><b id="sumNecesarios">$0</b></div>
-          <div class="pill"><span class="muted">No tanto</span><b id="sumNoTanto">$0</b></div>
-          <div class="pill"><span class="muted">Total gastos</span><b id="sumTotal">$0</b></div>
-        </div>
-
-<hr class="sep">
-        <div class="muted" style="text-align:left;">Actualizar saldo base</div>
-        <input id="nuevoSaldo" class="input" placeholder="Ej: 250000">
-
-        <div class="center-btn">
-          <button id="btnGuardarSaldo" class="btn">Guardar saldo</button>
-        </div>
-
-        <div id="msg" class="muted" style="margin-top:10px; text-align:center;"></div>
-      </div>
-
-      <div class="card">
-        <div class="muted">Últimos 5 gastos</div>
-        <table>
-          <thead>
-            <tr><th>Concepto</th><th>Monto</th><th>Tipo</th></tr>
-          </thead>
-          <tbody id="ultimos"></tbody>
-        </table>
-
-        <div class="center-btn">
-          <a class="btn" href="./add.html">Agregar uno nuevo</a>
-        </div>
-      </div>
+    <div class="nav">
+      <a class="active" href="./index.html">Inicio</a>
+      <a href="./add.html">Agregar gasto</a>
     </div>
   </div>
 
+  <div class="main">
+
+    <div class="card">
+      <div class="muted">Saldo actual</div>
+      <div id="saldo" class="big">$0</div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-title">Necesarios</div>
+          <div class="stat-value" id="sumNecesarios">$0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-title">No tanto</div>
+          <div class="stat-value" id="sumNoTanto">$0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-title">Total gastos</div>
+          <div class="stat-value" id="sumTotal">$0</div>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <label>Actualizar saldo base</label>
+      <input id="nuevoSaldo" class="input" placeholder="Ej: 250000">
+
+      <div class="center-btn">
+        <button id="btnGuardarSaldo" class="btn primary">
+          Guardar saldo
+        </button>
+      </div>
+
+      <div id="msg" class="muted" style="margin-top:10px;text-align:center;"></div>
+    </div>
+
+  </div>
+</div>
+
 <script>
-  // PWA (cache/offline)
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
-  }
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
 
-  const KEY = "saldosmart_v1";
+const KEY = "saldosmart_v2";
 
-  function moneyCLP(n){
-    return Number(n || 0).toLocaleString("es-CL", {
-      style:"currency", currency:"CLP", maximumFractionDigits:0
-    });
-  }
+function moneyCLP(n){
+  return Number(n||0).toLocaleString("es-CL",{
+    style:"currency",
+    currency:"CLP",
+    maximumFractionDigits:0
+  });
+}
 
-  function load(){
-    const raw = localStorage.getItem(KEY);
-    if(!raw) return { saldoBase: 0, gastos: [] };
-    try { return JSON.parse(raw); } catch { return { saldoBase: 0, gastos: [] }; }
-  }
+function load(){
+  const raw = localStorage.getItem(KEY);
+  if(!raw) return { saldoBase:0, gastos:[] };
+  return JSON.parse(raw);
+}
 
-  function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
+function save(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
 
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
+function render(){
+  const data = load();
 
-  function render(){
-    const data = load();
-    let necesarios = 0, noTanto = 0;
+  let necesarios = 0;
+  let noTanto = 0;
 
-    for(const g of data.gastos){
-      const m = Number(g.monto || 0);
-      if(g.tipo === "necesario") necesarios += m;
-      else noTanto += m;
-    }
-
-    const total = necesarios + noTanto;
-    const saldoActual = Number(data.saldoBase || 0) - total;
-
-    document.getElementById("saldo").textContent = moneyCLP(saldoActual);
-    document.getElementById("sumNecesarios").textContent = moneyCLP(necesarios);
-    document.getElementById("sumNoTanto").textContent = moneyCLP(noTanto);
-    document.getElementById("sumTotal").textContent = moneyCLP(total);
-
-    const tbody = document.getElementById("ultimos");
-    tbody.innerHTML = "";
-
-    const last = [...data.gastos].slice(-5).reverse();
-    if(last.length === 0){
-      tbody.innerHTML = `<tr><td colspan="3" class="muted">Aún no agregas gastos.</td></tr>`;
-      return;
-    }
-
-    for(const g of last){
-      tbody.insertAdjacentHTML("beforeend", `
-        <tr>
-          <td>${escapeHtml(g.concepto || "")}</td>
-          <td>${moneyCLP(g.monto)}</td>
-          <td><span class="tag">${g.tipo==="necesario"?"Necesario":"No tanto"}</span></td>
-        </tr>
-      `);
-    }
-  }
-
-  document.getElementById("btnGuardarSaldo").addEventListener("click", ()=>{
-    const input = document.getElementById("nuevoSaldo");
-    const val = input.value.replace(/\./g,"").replace(/,/g,"").trim();
-    const num = Number(val);
-    const msg = document.getElementById("msg");
-
-    if(!Number.isFinite(num) || num < 0){
-      msg.textContent = "Pon un saldo válido (ej: 250000).";
-      return;
-    }
-
-    const data = load();
-    data.saldoBase = Math.round(num);
-    save(data);
-    input.value = "";
-    msg.textContent = "✅ Saldo base actualizado.";
-    render();
+  data.gastos.forEach(g=>{
+    if(g.tipo==="necesario") necesarios+=g.monto;
+    else noTanto+=g.monto;
   });
 
+  const total = necesarios + noTanto;
+  const saldoActual = data.saldoBase - total;
+
+  const saldoEl = document.getElementById("saldo");
+  saldoEl.textContent = moneyCLP(saldoActual);
+
+  if(saldoActual < 0){
+    saldoEl.style.color = "#ff6b6b";
+  } else {
+    saldoEl.style.color = "";
+  }
+
+  document.getElementById("sumNecesarios").textContent = moneyCLP(necesarios);
+  document.getElementById("sumNoTanto").textContent = moneyCLP(noTanto);
+  document.getElementById("sumTotal").textContent = moneyCLP(total);
+}
+
+document.getElementById("btnGuardarSaldo").addEventListener("click", ()=>{
+  const val = document.getElementById("nuevoSaldo").value.replace(/\./g,"");
+  const num = Number(val);
+  if(!num) return;
+
+  const data = load();
+  data.saldoBase = num;
+  save(data);
+
+  document.getElementById("nuevoSaldo").value="";
   render();
+});
+
+render();
 </script>
 </body>
 </html>

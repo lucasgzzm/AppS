@@ -1,23 +1,22 @@
-/* ===== SaldoSmart UI System (igual en todas las páginas) ===== */
 :root{
-  --bg:#0b0f17;
-  --card:#0f1626;
-  --border:#24314d;
-  --border2:#2a3550;
+  --bg0:#070a12;
+  --bg1:#0b1020;
+  --card: rgba(18, 27, 50, .55);
+  --stroke: rgba(255,255,255,.10);
+  --stroke2: rgba(255,255,255,.14);
   --muted:#a9b6d3;
   --text:#e8eefc;
-  --field:#0b1222;
-  --shadow: 0 18px 60px rgba(0,0,0,.35);
+  --field: rgba(12, 18, 34, .75);
+  --shadow: 0 25px 80px rgba(0,0,0,.45);
 
-  --radius:18px;
-  --radius-sm:14px;
+  --radius: 22px;
+  --radius-sm: 16px;
 
-  --fs-title:18px;
-  --fs-base:14px;
-  --fs-big:36px;
+  --fs-base: 16px; /* iPhone fix */
+  --fs-title: 18px;
+  --fs-big: 44px;
 
-  --h: 44px;          /* altura estándar inputs/botones */
-  --pad-x: 14px;      /* padding horizontal */
+  --h: 48px;
 }
 
 *{ box-sizing:border-box; }
@@ -25,131 +24,186 @@ html,body{
   height:100%;
   margin:0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  background: var(--bg);
+  background: radial-gradient(1200px 700px at 20% 10%, #111a36 0%, transparent 60%),
+              radial-gradient(900px 600px at 80% 30%, #0c2a3a 0%, transparent 55%),
+              linear-gradient(180deg, var(--bg0), var(--bg1));
   color: var(--text);
   font-size: var(--fs-base);
-}
-
-body{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-}
-
-.wrap{ width:100%; max-width:900px; padding:20px; }
-
-/* Header */
-.top{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-  gap:12px;
-}
-
-.brand{ font-weight:900; font-size: var(--fs-title); }
-.muted{ color:var(--muted); font-size: var(--fs-base); }
-
-.nav{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.nav a{
-  height: var(--h);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding: 0 var(--pad-x);
-  color: var(--text);
-  text-decoration:none;
-  border:1px solid var(--border2);
-  border-radius:12px;
-  background: transparent;
-}
-.nav a:hover{ background:#121a2b; }
-
-/* Layout */
-.grid{
-  display:grid;
-  grid-template-columns: 1.2fr .8fr;
-  gap:16px;
-  margin-top:20px;
-}
-@media (max-width: 860px){ .grid{ grid-template-columns:1fr; } }
-
-.card{
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  box-shadow: var(--shadow);
-}
-
-.big{
-  font-size: var(--fs-big);
-  font-weight:900;
-  margin: 6px 0 12px;
-}
-
-/* Pills */
-.row{ display:flex; gap:12px; flex-wrap:wrap; }
-.pill{
-  padding:10px 14px;
-  border-radius:999px;
-  border:1px solid var(--border2);
-  background: var(--field);
-}
-.pill b{ display:block; font-size:18px; }
-
-/* Inputs / Select / Date (todos iguales) */
-/* ===== Inputs iPhone FIX (mismos tamaños/altura/letra) ===== */
-.input,
-select,
-input[type="date"]{
-  width: 100%;
-  min-height: var(--h);            /* en vez de height fijo */
-  padding: 12px 14px;             /* padding real (mejor en iOS) */
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border2);
-  background: var(--field);
-  color: var(--text);
-  outline: none;
-
-  font-size: 16px;                /* CLAVE: evita zoom iOS */
-  line-height: 1.2;               /* evita texto descentrado */
   -webkit-text-size-adjust: 100%;
 }
 
-/* Quita estilos raros nativos iOS */
-.input,
-select,
-input[type="date"]{
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding: 20px;
+  padding-top: calc(18px + env(safe-area-inset-top));
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.wrap{
+  width:100%;
+  max-width: 980px;
+}
+
+/* ===== Top bar moderno ===== */
+.topbar{
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(10, 14, 28, .55);
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 14px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 180px;
+}
+.brand img{
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+}
+.brand .title{
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 18px;
+  line-height: 1.1;
+}
+.brand .sub{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.nav{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.nav a{
+  height: 42px;
+  padding: 0 14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  color: var(--text);
+  border: 1px solid var(--stroke2);
+  background: rgba(16, 22, 42, .55);
+  border-radius: 14px;
+  transition: .15s;
+}
+.nav a:hover{ transform: translateY(-1px); filter: brightness(1.1); }
+.nav a.active{
+  border-color: rgba(255,255,255,.22);
+  background: rgba(32, 46, 86, .45);
+}
+
+/* ===== Layout ===== */
+.main{
+  margin-top: 16px;
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 16px;
+}
+@media (max-width: 920px){
+  .main{ grid-template-columns: 1fr; }
+  .topbar{ flex-direction: column; align-items: stretch; }
+  .nav{ justify-content: center; }
+  .brand{ justify-content: center; }
+}
+
+/* ===== Cards ===== */
+.card{
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.muted{ color: var(--muted); }
+.big{
+  font-size: var(--fs-big);
+  font-weight: 950;
+  letter-spacing: .2px;
+  margin: 6px 0 10px;
+}
+
+/* ===== Stats modernos ===== */
+.stats{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.stat{
+  background: rgba(10, 14, 28, .55);
+  border: 1px solid var(--stroke2);
+  border-radius: 18px;
+  padding: 14px;
+  min-height: 78px;
+}
+.stat-title{
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.stat-value{
+  font-size: 22px;
+  font-weight: 950;
+  margin-top: 8px;
+}
+@media (max-width: 520px){
+  .stats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats .stat:nth-child(3){ grid-column: 1 / -1; }
+}
+
+/* ===== Inputs iPhone FIX ===== */
+label{
+  display:block;
+  margin: 14px 0 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.input, select, input[type="date"]{
+  width:100%;
+  min-height: var(--h);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--stroke2);
+  background: var(--field);
+  color: var(--text);
+  outline: none;
+  font-size: 16px;  /* evita zoom iOS */
+  line-height: 1.2;
   -webkit-appearance: none;
   appearance: none;
 }
+.input::placeholder{ color:#7f8fb4; opacity:1; }
+input[type="date"]{ color-scheme: dark; }
 
-/* Placeholder más consistente */
-.input::placeholder{
-  color:#7f8fb4;
-  opacity: 1;
-}
-
-/* Date en iPhone: se respeta tema oscuro y se alinea */
-input[type="date"]{
-  color-scheme: dark;
-}
-
-/* Select: padding y cursor */
 select{
-  cursor: pointer;
-  padding-right: 40px; /* espacio para la flecha */
-}
-
-/* Flecha custom del select (se ve igual en todas partes) */
-select{
+  padding-right: 42px;
   background-image:
     linear-gradient(45deg, transparent 50%, #a9b6d3 50%),
     linear-gradient(135deg, #a9b6d3 50%, transparent 50%);
@@ -160,65 +214,43 @@ select{
   background-repeat: no-repeat;
 }
 
-.input::placeholder{ color:#7f8fb4; }
-
-/* Labels */
-label{
-  display:block;
-  margin-top:12px;
-  margin-bottom:6px;
-  font-size: var(--fs-base);
-  color: var(--muted);
-}
-
-/* Buttons (todos iguales) */
+/* ===== Buttons ===== */
 .btn{
-  height: var(--h);
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(20, 30, 58, .65);
+  color: var(--text);
+  cursor:pointer;
+  text-decoration:none;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  padding: 0 20px;
-  border-radius: var(--radius-sm);
-  border:1px solid var(--border2);
-  background:#121a2b;
-  color: var(--text);
-  text-decoration:none;
-  cursor:pointer;
   transition:.15s;
-  font-size: var(--fs-base);
-  white-space: nowrap;
+  font-weight: 800;
 }
-.btn:hover{ filter:brightness(1.1); transform: translateY(-1px); }
-
-.center-btn{
-  margin-top: 15px;
-  display:flex;
-  justify-content:center;
+.btn:hover{ transform: translateY(-1px); filter: brightness(1.08); }
+.btn.primary{
+  background: linear-gradient(135deg, rgba(78,122,255,.35), rgba(0,240,255,.18));
+  border-color: rgba(255,255,255,.22);
 }
+.center-btn{ margin-top: 14px; display:flex; justify-content:center; }
+.actions{ margin-top: 16px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
 
-.actions{
-  margin-top: 14px;
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-hr.sep{ border:none; border-top:1px solid #1f2a43; margin:16px 0; }
-
-/* Tables */
-table{ width:100%; border-collapse:collapse; margin-top:12px; }
-th,td{ padding:10px; border-bottom:1px solid #1f2a43; font-size: var(--fs-base); }
-th{ color: var(--muted); }
-
+/* ===== Tables ===== */
+table{ width:100%; border-collapse: collapse; margin-top: 12px; }
+th,td{ padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,.08); }
+th{ color: var(--muted); font-size: 13px; letter-spacing: .3px; }
 .tag{
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius:999px;
-  border:1px solid var(--border2);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(10, 14, 28, .45);
   display:inline-block;
 }
 
-.bad{ color:#ffb4b4; }
+hr.sep{ border:none; border-top: 1px solid rgba(255,255,255,.08); margin: 16px 0; }
 .ok{ color:#9ee6b8; }
-.danger{ border-color:#6b2b2b; background:#1d0f12; }
+.bad{ color:#ffb4b4; }

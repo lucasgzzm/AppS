@@ -1,121 +1,92 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <link rel="stylesheet" href="./styles.css">
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SaldoSmart — Agregar gasto</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agregar gasto</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#0b0f17">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SaldoSmart">
-  <link rel="apple-touch-icon" href="./icon-192.png">
-
+<link rel="stylesheet" href="./styles.css">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b1020">
+<link rel="apple-touch-icon" href="./icon-192.png">
 </head>
-<body>
-  <div class="wrap">
-    <div class="top">
-      <div style="font-weight:900;">➕ Agregar gasto</div>
-      <div class="muted">Se descuenta automáticamente del saldo</div>
 
-      <div class="nav">
-        <a href="./index.html">Inicio</a>
-        <a href="./add.html">Agregar</a>
-        <a href="./history.html">Historial</a>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <img src="./icon-192.png">
+      <div>
+        <div class="title">Agregar gasto</div>
+        <div class="sub">Se descuenta del saldo</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <label for="concepto">Concepto</label>
-          <input id="concepto" class="input" placeholder="Ej: Supermercado / Bencina / Streaming" />
-        </div>
-        <div>
-          <label for="monto">Monto (CLP)</label>
-          <input id="monto" class="input" inputmode="decimal" placeholder="Ej: 12990" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="tipo">Tipo</label>
-          <select id="tipo">
-            <option value="necesario">Necesario</option>
-            <option value="no_tanto">No tanto</option>
-          </select>
-        </div>
-        <div>
-          <label for="fecha">Fecha</label>
-          <input id="fecha" class="input" type="date" />
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="guardar" class="btn">Guardar gasto</button>
-        <a class="btn" href="./index.html">Volver</a>
-      </div>
-
-      <div id="msg" class="muted" style="margin-top:12px; text-align:center;"></div>
+    <div class="nav">
+      <a href="./index.html">Inicio</a>
+      <a class="active" href="./add.html">Agregar gasto</a>
     </div>
   </div>
 
+  <div class="main">
+    <div class="card">
+
+      <label>Concepto</label>
+      <input id="concepto" class="input" placeholder="Ej: Supermercado">
+
+      <label>Monto (CLP)</label>
+      <input id="monto" class="input" placeholder="Ej: 15000">
+
+      <label>Tipo</label>
+      <select id="tipo">
+        <option value="necesario">Necesario</option>
+        <option value="no_tanto">No tanto</option>
+      </select>
+
+      <div class="actions">
+        <button id="guardar" class="btn primary">Guardar gasto</button>
+        <a class="btn" href="./index.html">Volver</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
 <script>
-  const KEY = "saldosmart_v1";
-  function load(){
-    const raw = localStorage.getItem(KEY);
-    if(!raw) return { saldoBase: 0, gastos: [] };
-    try { return JSON.parse(raw); } catch { return { saldoBase: 0, gastos: [] }; }
-  }
-  function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
+const KEY = "saldosmart_v2";
 
-  const hoy = new Date();
-  const yyyy = hoy.getFullYear();
-  const mm = String(hoy.getMonth()+1).padStart(2,"0");
-  const dd = String(hoy.getDate()).padStart(2,"0");
-  document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
+function load(){
+  const raw = localStorage.getItem(KEY);
+  if(!raw) return { saldoBase:0, gastos:[] };
+  return JSON.parse(raw);
+}
 
-  document.getElementById("guardar").addEventListener("click", () => {
-    const concepto = document.getElementById("concepto").value.trim();
-    const montoRaw = document.getElementById("monto").value.replace(/\./g,"").replace(/,/g,"").trim();
-    const monto = Number(montoRaw);
-    const tipoSel = document.getElementById("tipo").value;
-    const fecha = document.getElementById("fecha").value || `${yyyy}-${mm}-${dd}`;
+function save(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
 
-    const msg = document.getElementById("msg");
-    msg.className = "muted";
+document.getElementById("guardar").addEventListener("click", ()=>{
 
-    if(!concepto){
-      msg.textContent = "Pon un concepto (ej: 'Pan', 'Bencina').";
-      msg.className = "bad";
-      return;
-    }
-    if(!Number.isFinite(monto) || monto <= 0){
-      msg.textContent = "Pon un monto válido (mayor a 0).";
-      msg.className = "bad";
-      return;
-    }
+  const concepto = document.getElementById("concepto").value.trim();
+  const monto = Number(document.getElementById("monto").value);
+  const tipo = document.getElementById("tipo").value;
 
-    const data = load();
-    data.gastos.push({
-      id: crypto.randomUUID?.() || String(Date.now()),
-      concepto,
-      monto: Math.round(monto),
-      tipo: (tipoSel === "necesario") ? "necesario" : "no_tanto",
-      fecha
-    });
-    save(data);
+  if(!concepto || !monto) return;
 
-    msg.textContent = "✅ Gasto guardado.";
-    msg.className = "ok";
+  const data = load();
 
-    document.getElementById("concepto").value = "";
-    document.getElementById("monto").value = "";
-    document.getElementById("tipo").value = "necesario";
+  data.gastos.push({
+    concepto,
+    monto,
+    tipo
   });
+
+  save(data);
+
+  window.location.href = "index.html";
+});
 </script>
 </body>
 </html>
