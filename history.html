@@ -4,57 +4,117 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SaldoSmart — Historial</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b0f17">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SaldoSmart">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    body { margin:0; background:#0b0f17; color:#e8eefc; }
-    .wrap{ max-width: 980px; margin: 0 auto; padding: 20px; }
-    .top{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .nav a{ color:#e8eefc; text-decoration:none; padding:10px 12px; border:1px solid #2a3550; border-radius:12px; }
+    body{
+      margin:0;
+      background:#0b0f17;
+      color:#e8eefc;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+    }
+    .wrap{ width:100%; max-width:980px; padding:20px; }
+
+    .top{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      gap:12px;
+    }
+    .nav{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .nav a{
+      color:#e8eefc;
+      text-decoration:none;
+      padding:10px 16px;
+      border:1px solid #2a3550;
+      border-radius:12px;
+    }
     .nav a:hover{ background:#121a2b; }
-    .card{ margin-top:16px; background:#0f1626; border:1px solid #24314d; border-radius:18px; padding:16px; }
-    table{ width:100%; border-collapse:collapse; margin-top:10px; }
-    th,td{ text-align:left; padding:10px; border-bottom:1px solid #1f2a43; font-size:14px; vertical-align:top; }
-    th{ color:#a9b6d3; font-weight:700; }
-    .btn{ display:inline-block; padding:12px 14px; border-radius:14px; border:1px solid #2a3550; background:#121a2b; color:#e8eefc; cursor:pointer; text-decoration:none; }
-    .btn:hover{ filter:brightness(1.08); }
-    .danger{ border-color:#6b2b2b; background:#1d0f12; }
-    .tag{ font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #2a3550; display:inline-block; }
+
+    .card{
+      margin-top:16px;
+      background:#0f1626;
+      border:1px solid #24314d;
+      border-radius:18px;
+      padding:18px;
+    }
     .muted{ color:#a9b6d3; font-size:14px; }
-    .search{ width:100%; padding:12px 12px; border-radius:14px; border:1px solid #2a3550; background:#0b1222; color:#e8eefc; outline:none; }
+
+    table{ width:100%; border-collapse:collapse; margin-top:12px; }
+    th, td{ padding:10px; border-bottom:1px solid #1f2a43; font-size:14px; vertical-align:top; }
+    th{ color:#a9b6d3; }
+
+    .search{
+      width:100%;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid #2a3550;
+      background:#0b1222;
+      color:#e8eefc;
+      outline:none;
+    }
+
+    .btn{
+      display:inline-block;
+      padding:12px 20px;
+      border-radius:14px;
+      border:1px solid #2a3550;
+      background:#121a2b;
+      color:#e8eefc;
+      cursor:pointer;
+      text-decoration:none;
+      transition:.2s;
+    }
+    .btn:hover{ filter:brightness(1.1); transform: translateY(-1px); }
+
+    .danger{ border-color:#6b2b2b; background:#1d0f12; }
+
+    .tag{ font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #2a3550; display:inline-block; }
+    .actions{ margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <div>
-        <div style="font-weight:900;">📒 Historial</div>
-        <div class="muted">Filtra y administra tus gastos</div>
-      </div>
+      <div style="font-weight:900;">📒 Historial</div>
+      <div class="muted">Filtra y administra tus gastos</div>
+
       <div class="nav">
-        <a href="index.html">Inicio</a>
-        <a href="add.html">+ Agregar gasto</a>
-        <a href="history.html">Historial</a>
+        <a href="./index.html">Inicio</a>
+        <a href="./add.html">+ Agregar gasto</a>
+        <a href="./history.html">Historial</a>
       </div>
     </div>
 
     <div class="card">
-      <label class="muted">Buscar por concepto</label>
+      <div class="muted">Buscar por concepto</div>
       <input id="q" class="search" placeholder="Ej: 'super', 'bencina', 'netflix'..." />
 
-      <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap;">
+      <div class="actions">
         <button id="btnBorrarTodo" class="btn danger">Borrar TODO</button>
         <span id="msg" class="muted"></span>
       </div>
 
       <table>
         <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Concepto</th>
-            <th>Monto</th>
-            <th>Tipo</th>
-            <th></th>
-          </tr>
+          <tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Tipo</th><th></th></tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
@@ -65,8 +125,9 @@
   const KEY = "saldosmart_v1";
 
   function moneyCLP(n){
-    const num = Number(n || 0);
-    return num.toLocaleString("es-CL", { style:"currency", currency:"CLP", maximumFractionDigits:0 });
+    return Number(n || 0).toLocaleString("es-CL", {
+      style:"currency", currency:"CLP", maximumFractionDigits:0
+    });
   }
   function load(){
     const raw = localStorage.getItem(KEY);
@@ -113,9 +174,9 @@
     tbody.querySelectorAll("button[data-del]").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-del");
-        const data2 = load();
-        data2.gastos = data2.gastos.filter(x => String(x.id) !== String(id));
-        save(data2);
+        const d = load();
+        d.gastos = d.gastos.filter(x => String(x.id) !== String(id));
+        save(d);
         render();
       });
     });
