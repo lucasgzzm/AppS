@@ -1,4 +1,4 @@
-const CACHE_NAME = "saldosmart-v2";
+const CACHE_NAME = "saldosmart-v3";
 
 const FILES = [
   "./",
