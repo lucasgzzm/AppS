@@ -55,12 +55,12 @@
 </div>
 
 <script>
-const KEY = "saldosmart_v2";
+const KEY = "saldosmart_v3";
 
 function load(){
   const raw = localStorage.getItem(KEY);
   if(!raw) return { saldoBase:0, gastos:[] };
-  return JSON.parse(raw);
+  try { return JSON.parse(raw); } catch { return { saldoBase:0, gastos:[] }; }
 }
 
 function save(data){
@@ -70,22 +70,36 @@ function save(data){
 document.getElementById("guardar").addEventListener("click", ()=>{
 
   const concepto = document.getElementById("concepto").value.trim();
-  const monto = Number(document.getElementById("monto").value);
+
+  const montoRaw = document.getElementById("monto").value
+    .replace(/\./g,"")
+    .replace(/,/g,"")
+    .replace(/\$/g,"")
+    .trim();
+
+  const monto = Number(montoRaw);
   const tipo = document.getElementById("tipo").value;
 
-  if(!concepto || !monto) return;
+  if(!concepto){
+    alert("Escribe un concepto");
+    return;
+  }
+  if(!Number.isFinite(monto) || monto <= 0){
+    alert("Escribe un monto válido (ej: 15000 o 15.000)");
+    return;
+  }
 
   const data = load();
 
   data.gastos.push({
     concepto,
-    monto,
+    monto: Math.round(monto),
     tipo
   });
 
   save(data);
 
-  window.location.href = "index.html";
+  window.location.href = "./index.html";
 });
 </script>
 </body>

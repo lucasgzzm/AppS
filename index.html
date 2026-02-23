@@ -1,141 +1,221 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SaldoSmart</title>
 
-<link rel="stylesheet" href="./styles.css">
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" content="#0b1020">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SaldoSmart</title>
+
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b1020">
+  <link rel="apple-touch-icon" href="./icon-192.png">
 </head>
 
 <body>
-<div class="wrap">
+  <div class="wrap">
 
-  <div class="topbar">
-    <div class="brand">
-      <img src="./icon-192.png">
-      <div>
-        <div class="title">SaldoSmart</div>
-        <div class="sub">Organiza tu saldo</div>
+    <div class="topbar">
+      <div class="brand">
+        <img src="./icon-192.png">
+        <div>
+          <div class="title">SaldoSmart</div>
+          <div class="sub">Organiza tu saldo</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <a class="active" href="./index.html">Inicio</a>
+        <a href="./add.html">Agregar gasto</a>
       </div>
     </div>
 
-    <div class="nav">
-      <a class="active" href="./index.html">Inicio</a>
-      <a href="./add.html">Agregar gasto</a>
-    </div>
-  </div>
+    <div class="main">
 
-  <div class="main">
+      <div class="card">
+        <div class="muted">Saldo actual</div>
 
-    <div class="card">
-      <div class="muted">Saldo actual</div>
-      <div id="saldo" class="big">$0</div>
+        <div class="saldo-row">
+          <div id="saldo" class="big">$0</div>
+          <div class="saldo-base">
+            Base: <span id="saldoBase">$0</span>
+          </div>
+        </div>
 
-     <div class="stats">
-  <div class="stat">
-    <div class="stat-title">Necesarios</div>
-    <div class="stat-value" id="sumNecesarios">$0</div>
-  </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-title">Necesarios</div>
+            <div class="stat-value" id="sumNecesarios">$0</div>
+          </div>
 
-  <div class="stat">
-    <div class="stat-title">No tanto</div>
-    <div class="stat-value" id="sumNoTanto">$0</div>
-  </div>
+          <div class="stat">
+            <div class="stat-title">No tanto</div>
+            <div class="stat-value" id="sumNoTanto">$0</div>
+          </div>
 
-  <div class="stat">
-    <div class="stat-title">Total gastos</div>
-    <div class="stat-value" id="sumTotal">$0</div>
-  </div>
-</div>
+          <div class="stat">
+            <div class="stat-title">Total gastos</div>
+            <div class="stat-value" id="sumTotal">$0</div>
+          </div>
+        </div>
 
-      <hr class="sep">
+        <hr class="sep">
 
-      <label>Actualizar saldo base</label>
-      <input id="nuevoSaldo" class="input" placeholder="Ej: 250000">
+        <label>Actualizar saldo base</label>
+        <input id="nuevoSaldo" class="input" placeholder="Ej: 250000">
 
-      <div class="center-btn">
-        <button id="btnGuardarSaldo" class="btn primary">
-          Guardar saldo
-        </button>
+        <div class="center-btn">
+          <button id="btnGuardarSaldo" class="btn primary">
+            Guardar saldo
+          </button>
+        </div>
+
+        <hr class="sep">
+
+        <div class="muted" style="margin-bottom:10px;">
+          Últimos gastos
+        </div>
+
+        <div class="tabla-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="listaGastos"></tbody>
+          </table>
+        </div>
+
       </div>
 
-      <div id="msg" class="muted" style="margin-top:10px;text-align:center;"></div>
     </div>
-
   </div>
-</div>
 
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js");
-}
+  <script>
 
-const KEY = "saldosmart_v2";
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
 
-function moneyCLP(n){
-  return Number(n||0).toLocaleString("es-CL",{
-    style:"currency",
-    currency:"CLP",
-    maximumFractionDigits:0
-  });
-}
+    const KEY = "saldosmart_v3";
 
-function load(){
-  const raw = localStorage.getItem(KEY);
-  if(!raw) return { saldoBase:0, gastos:[] };
-  return JSON.parse(raw);
-}
+    function moneyCLP(n) {
+      return Number(n || 0).toLocaleString("es-CL", {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0
+      });
+    }
 
-function save(data){
-  localStorage.setItem(KEY, JSON.stringify(data));
-}
+    function load() {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return { saldoBase: 0, gastos: [] };
+      return JSON.parse(raw);
+    }
 
-function render(){
-  const data = load();
+    function save(data) {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    }
 
-  let necesarios = 0;
-  let noTanto = 0;
+    function render() {
+      const data = load();
 
-  data.gastos.forEach(g=>{
-    if(g.tipo==="necesario") necesarios+=g.monto;
-    else noTanto+=g.monto;
-  });
+      let necesarios = 0;
+      let noTanto = 0;
 
-  const total = necesarios + noTanto;
-  const saldoActual = data.saldoBase - total;
+      data.gastos.forEach(g => {
+        if (g.tipo === "necesario") necesarios += g.monto;
+        else noTanto += g.monto;
+      });
 
-  const saldoEl = document.getElementById("saldo");
-  saldoEl.textContent = moneyCLP(saldoActual);
+      const total = necesarios + noTanto;
+      const saldoActual = data.saldoBase - total;
 
-  if(saldoActual < 0){
-    saldoEl.style.color = "#ff6b6b";
-  } else {
-    saldoEl.style.color = "";
-  }
+      document.getElementById("saldoBase").textContent =
+        moneyCLP(data.saldoBase);
 
-  document.getElementById("sumNecesarios").textContent = moneyCLP(necesarios);
-  document.getElementById("sumNoTanto").textContent = moneyCLP(noTanto);
-  document.getElementById("sumTotal").textContent = moneyCLP(total);
-}
+      const saldoEl = document.getElementById("saldo");
+      saldoEl.textContent = moneyCLP(saldoActual);
 
-document.getElementById("btnGuardarSaldo").addEventListener("click", ()=>{
-  const val = document.getElementById("nuevoSaldo").value.replace(/\./g,"");
-  const num = Number(val);
-  if(!num) return;
+      if (saldoActual < 0) {
+        saldoEl.style.color = "#ff6b6b";
+      } else {
+        saldoEl.style.color = "";
+      }
 
-  const data = load();
-  data.saldoBase = num;
-  save(data);
+      document.getElementById("sumNecesarios").textContent = moneyCLP(necesarios);
+      document.getElementById("sumNoTanto").textContent = moneyCLP(noTanto);
+      document.getElementById("sumTotal").textContent = moneyCLP(total);
 
-  document.getElementById("nuevoSaldo").value="";
-  render();
-});
+      const lista = document.getElementById("listaGastos");
+      lista.innerHTML = "";
 
-render();
-</script>
+      if (data.gastos.length === 0) {
+        lista.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align:center;color:#888;">
+          No hay gastos aún
+        </td>
+      </tr>
+    `;
+      } else {
+
+        const ultimos = [...data.gastos].reverse();
+        ultimos.forEach((g, index) => {
+
+          const realIndex = data.gastos.length - 1 - index;
+
+          lista.innerHTML += `
+        <tr>
+          <td>${g.concepto}</td>
+          <td>${moneyCLP(g.monto)}</td>
+          <td>
+            <span class="tag">
+              ${g.tipo === "necesario" ? "Necesario" : "No tanto"}
+            </span>
+          </td>
+          <td>
+            <button class="delete-btn"
+              onclick="eliminarGasto(${realIndex})">
+              ✕
+            </button>
+          </td>
+        </tr>
+      `;
+        });
+      }
+    }
+
+    function eliminarGasto(index) {
+      const data = load();
+      if (!confirm("¿Eliminar este gasto?")) return;
+      data.gastos.splice(index, 1);
+      save(data);
+      render();
+    }
+
+    document.getElementById("btnGuardarSaldo")
+      .addEventListener("click", () => {
+        const val = document.getElementById("nuevoSaldo")
+          .value.replace(/\./g, "");
+        const num = Number(val);
+        if (!num) return;
+
+        const data = load();
+        data.saldoBase = num;
+        save(data);
+
+        document.getElementById("nuevoSaldo").value = "";
+        render();
+      });
+
+    render();
+
+  </script>
 </body>
+
 </html>
