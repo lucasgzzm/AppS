@@ -1,105 +1,68 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Agregar gasto</title>
-
-<link rel="stylesheet" href="./styles.css">
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" content="#0b1020">
-<link rel="apple-touch-icon" href="./icon-modern-192.png">
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agregar Gasto</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
 <body>
-<div class="wrap">
-
-  <div class="topbar">
-    <div class="brand">
-      <img src="./icon-192.png">
-      <div>
-        <div class="title">Agregar gasto</div>
-        <div class="sub">Se descuenta del saldo</div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="title">Nuevo Gasto</div>
       </div>
+      <div class="nav"><a href="./index.html">Volver</a></div>
     </div>
 
-    <div class="nav">
-      <a href="./index.html">Inicio</a>
-      <a class="active" href="./add.html">Agregar gasto</a>
+    <div class="main">
+      <div class="card">
+        <label>Concepto</label>
+        <input id="concepto" class="input" placeholder="Ej: Supermercado">
+        
+        <label>Monto (CLP)</label>
+        <input id="monto" type="number" class="input" placeholder="Ej: 15000">
+
+        <label>Tipo de Gasto</label>
+        <select id="tipo" class="input">
+          <option value="necesario">Necesario (Fijo/Vital)</option>
+          <option value="no_tanto">No tanto (Deseo/Gusto)</option>
+        </select>
+
+        <div class="actions">
+          <button id="guardar" class="btn primary" style="width:100%">Guardar Gasto</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="main">
-    <div class="card">
+  <script>
+    const KEY = "saldosmart_v3";
+    
+    document.getElementById("guardar").addEventListener("click", () => {
+      const concepto = document.getElementById("concepto").value.trim();
+      const monto = Number(document.getElementById("monto").value);
+      const tipo = document.getElementById("tipo").value;
 
-      <label>Concepto</label>
-      <input id="concepto" class="input" placeholder="Ej: Supermercado">
+      if (!concepto || monto <= 0) {
+        alert("Completa los datos correctamente");
+        return;
+      }
 
-      <label>Monto (CLP)</label>
-      <input id="monto" class="input" placeholder="Ej: 15000">
+      const raw = localStorage.getItem(KEY);
+      const data = raw ? JSON.parse(raw) : { saldoBase: 0, gastos: [] };
 
-      <label>Tipo</label>
-      <select id="tipo">
-        <option value="necesario">Necesario</option>
-        <option value="no_tanto">No tanto</option>
-      </select>
+      data.gastos.push({
+        id: Date.now(), // ID único para borrar correctamente
+        fecha: new Date().toLocaleDateString('es-CL'),
+        concepto,
+        monto: Math.round(monto),
+        tipo
+      });
 
-      <div class="actions">
-        <button id="guardar" class="btn primary">Guardar gasto</button>
-        <a class="btn" href="./index.html">Volver</a>
-      </div>
-
-    </div>
-  </div>
-
-</div>
-
-<script>
-const KEY = "saldosmart_v3";
-
-function load(){
-  const raw = localStorage.getItem(KEY);
-  if(!raw) return { saldoBase:0, gastos:[] };
-  try { return JSON.parse(raw); } catch { return { saldoBase:0, gastos:[] }; }
-}
-
-function save(data){
-  localStorage.setItem(KEY, JSON.stringify(data));
-}
-
-document.getElementById("guardar").addEventListener("click", ()=>{
-
-  const concepto = document.getElementById("concepto").value.trim();
-
-  const montoRaw = document.getElementById("monto").value
-    .replace(/\./g,"")
-    .replace(/,/g,"")
-    .replace(/\$/g,"")
-    .trim();
-
-  const monto = Number(montoRaw);
-  const tipo = document.getElementById("tipo").value;
-
-  if(!concepto){
-    alert("Escribe un concepto");
-    return;
-  }
-  if(!Number.isFinite(monto) || monto <= 0){
-    alert("Escribe un monto válido (ej: 15000 o 15.000)");
-    return;
-  }
-
-  const data = load();
-
-  data.gastos.push({
-    concepto,
-    monto: Math.round(monto),
-    tipo
-  });
-
-  save(data);
-
-  window.location.href = "./index.html";
-});
-</script>
+      localStorage.setItem(KEY, JSON.stringify(data));
+      window.location.href = "./index.html";
+    });
+  </script>
 </body>
 </html>

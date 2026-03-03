@@ -1,116 +1,86 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <link rel="stylesheet" href="./styles.css">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SaldoSmart — Historial</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#0b0f17">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="SaldoSmart">
-  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Historial — SaldoSmart</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
-      <div style="font-weight:900;">HISTORIAL</div>
-
-      <div class="nav">
-        <a href="./index.html">Inicio</a>
-        <a href="./add.html">+ Agregar gasto</a>
-        <a href="./history.html">Historial</a>
-      </div>
-      <BR>
+    <div class="topbar">
+      <div class="brand"><div class="title">Historial Completo</div></div>
+      <div class="nav"><a href="./index.html">Inicio</a></div>
     </div>
 
-    <div class="card">
-      <div class="actions">
-        <button id="btnBorrarTodo" class="btn danger">Borrar TODO</button>
-        <span id="msg" class="muted"></span>
+    <div class="main" style="grid-template-columns: 1fr;">
+      <div class="card">
+        <input id="q" class="input" placeholder="Buscar por concepto..." style="margin-bottom: 20px;">
+        
+        <div class="tabla-scroll" style="max-height: none;">
+          <table>
+            <thead>
+              <tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Tipo</th><th></th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+          <button id="btnBorrarTodo" class="btn" style="color: #ff6b6b; border-color: #ff6b6b66;">Limpiar todos los datos</button>
+        </div>
       </div>
-
-      <table>
-        <thead>
-          <tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Tipo</th><th></th></tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
     </div>
   </div>
 
 <script>
-  const KEY = "saldosmart_v1";
+  const KEY = "saldosmart_v3";
 
-  function moneyCLP(n){
-    return Number(n || 0).toLocaleString("es-CL", {
-      style:"currency", currency:"CLP", maximumFractionDigits:0
-    });
+  function moneyCLP(n) {
+    return Number(n || 0).toLocaleString("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 });
   }
-  function load(){
+
+  function render() {
     const raw = localStorage.getItem(KEY);
-    if(!raw) return { saldoBase: 0, gastos: [] };
-    try { return JSON.parse(raw); } catch { return { saldoBase: 0, gastos: [] }; }
-  }
-  function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
-
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
-
-  function render(){
-    const data = load();
-    const q = (document.getElementById("q").value || "").toLowerCase().trim();
+    const data = raw ? JSON.parse(raw) : { saldoBase: 0, gastos: [] };
+    const q = document.getElementById("q").value.toLowerCase();
     const tbody = document.getElementById("rows");
+    
     tbody.innerHTML = "";
+    const filtrados = data.gastos.filter(g => g.concepto.toLowerCase().includes(q)).reverse();
 
-    const list = [...data.gastos].reverse().filter(g => {
-      if(!q) return true;
-      return String(g.concepto||"").toLowerCase().includes(q);
-    });
-
-    if(list.length === 0){
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">No hay gastos que mostrar.</td></tr>`;
+    if(filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center" class="muted">No hay registros</td></tr>';
       return;
     }
 
-    for(const g of list){
-      const tipoLabel = g.tipo === "necesario" ? "Necesario" : "No tanto";
+    filtrados.forEach(g => {
       tbody.insertAdjacentHTML("beforeend", `
         <tr>
-          <td>${escapeHtml(g.fecha || "")}</td>
-          <td>${escapeHtml(g.concepto || "")}</td>
+          <td style="font-size: 11px;">${g.fecha}</td>
+          <td>${g.concepto}</td>
           <td>${moneyCLP(g.monto)}</td>
-          <td><span class="tag">${tipoLabel}</span></td>
-          <td><button class="btn" data-del="${escapeHtml(g.id)}">Eliminar</button></td>
+          <td><span class="tag">${g.tipo === 'necesario' ? 'Nec' : 'Gusto'}</span></td>
+          <td><button class="delete-btn" onclick="eliminarGasto(${g.id})">✕</button></td>
         </tr>
       `);
-    }
-
-    tbody.querySelectorAll("button[data-del]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-del");
-        const d = load();
-        d.gastos = d.gastos.filter(x => String(x.id) !== String(id));
-        save(d);
-        render();
-      });
     });
   }
 
-  document.getElementById("q").addEventListener("input", render);
-
-  document.getElementById("btnBorrarTodo").addEventListener("click", () => {
-    const ok = confirm("¿Seguro? Se borrarán todos tus gastos y saldo base.");
-    if(!ok) return;
-    localStorage.removeItem(KEY);
-    document.getElementById("msg").textContent = "Listo: datos borrados.";
+  function eliminarGasto(id) {
+    if(!confirm("¿Eliminar este registro?")) return;
+    const data = JSON.parse(localStorage.getItem(KEY));
+    data.gastos = data.gastos.filter(g => g.id !== id);
+    localStorage.setItem(KEY, JSON.stringify(data));
     render();
+  }
+
+  document.getElementById("q").addEventListener("input", render);
+  document.getElementById("btnBorrarTodo").addEventListener("click", () => {
+    if(confirm("¿BORRAR TODO? Esto no se puede deshacer.")) {
+      localStorage.removeItem(KEY);
+      render();
+    }
   });
 
   render();

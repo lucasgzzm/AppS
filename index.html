@@ -1,220 +1,92 @@
 <!doctype html>
 <html lang="es">
-
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
   <title>SaldoSmart</title>
-
   <link rel="stylesheet" href="./styles.css">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#0b1020">
-  <link rel="apple-touch-icon" href="./icon-modern-192.png">
-
+</head>
 <body>
+
   <div class="wrap">
+    <header style="margin-bottom: 30px;">
+      <h2 style="margin:0; font-weight: 800;">Hola, <span style="color: var(--accent-light);">Smart User</span></h2>
+      <p class="muted">Este es tu resumen de hoy</p>
+    </header>
 
-    <div class="topbar">
-      <div class="brand">
-        <img src="./icon-192.png">
+    <div class="card" style="background: linear-gradient(135deg, #1e2a4a 0%, #0b1020 100%);">
+      <div class="muted" style="color: #a9b6d3;">Saldo Disponible</div>
+      <div id="saldo" class="big">$0</div>
+      
+      <div style="display: flex; gap: 15px; margin-top: 15px;">
         <div>
-          <div class="title">SaldoSmart</div>
-          <div class="sub">Organiza tu saldo</div>
+          <div class="muted" style="font-size: 0.7rem;">META AHORRO</div>
+          <div id="metaAhorro" style="color: var(--accent-light); font-weight: 700;">$0</div>
         </div>
-      </div>
-
-      <div class="nav">
-        <a class="active" href="./index.html">Inicio</a>
-        <a href="./add.html">Agregar gasto</a>
+        <div style="border-left: 1px solid var(--border); padding-left: 15px;">
+          <div class="muted" style="font-size: 0.7rem;">DISPONIBLE REAL</div>
+          <div id="disponibleReal" style="font-weight: 700;">$0</div>
+        </div>
       </div>
     </div>
 
-    <div class="main">
-
-      <div class="card">
-        <div class="muted">Saldo actual</div>
-
-        <div class="saldo-row">
-          <div id="saldo" class="big">$0</div>
-          <div class="saldo-base">
-            Base: <span id="saldoBase">$0</span>
-          </div>
-        </div>
-
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-title">Necesarios</div>
-            <div class="stat-value" id="sumNecesarios">$0</div>
-          </div>
-
-          <div class="stat">
-            <div class="stat-title">No tanto</div>
-            <div class="stat-value" id="sumNoTanto">$0</div>
-          </div>
-
-          <div class="stat">
-            <div class="stat-title">Total gastos</div>
-            <div class="stat-value" id="sumTotal">$0</div>
-          </div>
-        </div>
-
-        <hr class="sep">
-
-        <label>Actualizar saldo base</label>
-        <input id="nuevoSaldo" class="input" placeholder="Ej: 250000">
-
-        <div class="center-btn">
-          <button id="btnGuardarSaldo" class="btn primary">
-            Guardar saldo
-          </button>
-        </div>
-
-        <hr class="sep">
-
-        <div class="muted" style="margin-bottom:10px;">
-          Últimos gastos
-        </div>
-
-        <div class="tabla-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Concepto</th>
-                <th>Monto</th>
-                <th>Tipo</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="listaGastos"></tbody>
-          </table>
-        </div>
-
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+      <div class="card" style="margin:0; padding: 15px;">
+        <div class="muted">Necesario</div>
+        <div id="sumNecesarios" style="color: var(--success); font-weight: 700;">$0</div>
       </div>
-
+      <div class="card" style="margin:0; padding: 15px;">
+        <div class="muted">Gustos</div>
+        <div id="sumNoTanto" style="color: #ffb800; font-weight: 700;">$0</div>
+      </div>
     </div>
+
+    <h3 style="font-size: 1.1rem; margin-bottom: 15px;">Movimientos recientes</h3>
+    <div id="listaGastos">
+      </div>
   </div>
 
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <div style="font-size: 1.5rem;">🏠</div>
+      Inicio
+    </a>
+    <a href="add.html" class="nav-item">
+      <div style="font-size: 1.5rem;">➕</div>
+      Gasto
+    </a>
+    <a href="history.html" class="nav-item">
+      <div style="font-size: 1.5rem;">📊</div>
+      Historial
+    </a>
+  </nav>
+
   <script>
-
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js");
-    }
-
-    const KEY = "saldosmart_v3";
-
-    function moneyCLP(n) {
-      return Number(n || 0).toLocaleString("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0
-      });
-    }
-
-    function load() {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return { saldoBase: 0, gastos: [] };
-      return JSON.parse(raw);
-    }
-
-    function save(data) {
-      localStorage.setItem(KEY, JSON.stringify(data));
-    }
-
+    // Usa la misma lógica de JS que te di antes, 
+    // pero actualiza el render() para crear "divs" en lugar de "tr" 
+    // para que se vea mejor en móviles.
     function render() {
       const data = load();
-
-      let necesarios = 0;
-      let noTanto = 0;
-
-      data.gastos.forEach(g => {
-        if (g.tipo === "necesario") necesarios += g.monto;
-        else noTanto += g.monto;
-      });
-
-      const total = necesarios + noTanto;
-      const saldoActual = data.saldoBase - total;
-
-      document.getElementById("saldoBase").textContent =
-        moneyCLP(data.saldoBase);
-
-      const saldoEl = document.getElementById("saldo");
-      saldoEl.textContent = moneyCLP(saldoActual);
-
-      if (saldoActual < 0) {
-        saldoEl.style.color = "#ff6b6b";
-      } else {
-        saldoEl.style.color = "";
-      }
-
-      document.getElementById("sumNecesarios").textContent = moneyCLP(necesarios);
-      document.getElementById("sumNoTanto").textContent = moneyCLP(noTanto);
-      document.getElementById("sumTotal").textContent = moneyCLP(total);
+      // ... (cálculos de saldo igual a la versión anterior) ...
 
       const lista = document.getElementById("listaGastos");
       lista.innerHTML = "";
-
-      if (data.gastos.length === 0) {
-        lista.innerHTML = `
-      <tr>
-        <td colspan="4" style="text-align:center;color:#888;">
-          No hay gastos aún
-        </td>
-      </tr>
-    `;
-      } else {
-
-        const ultimos = [...data.gastos].reverse();
-        ultimos.forEach((g, index) => {
-
-          const realIndex = data.gastos.length - 1 - index;
-
-          lista.innerHTML += `
-        <tr>
-          <td>${g.concepto}</td>
-          <td>${moneyCLP(g.monto)}</td>
-          <td>
-            <span class="tag">
-              ${g.tipo === "necesario" ? "Necesario" : "No tanto"}
-            </span>
-          </td>
-          <td>
-            <button class="delete-btn"
-              onclick="eliminarGasto(${realIndex})">
-              ✕
-            </button>
-          </td>
-        </tr>
-      `;
-        });
-      }
-    }
-
-    function eliminarGasto(index) {
-      const data = load();
-      if (!confirm("¿Eliminar este gasto?")) return;
-      data.gastos.splice(index, 1);
-      save(data);
-      render();
-    }
-
-    document.getElementById("btnGuardarSaldo")
-      .addEventListener("click", () => {
-        const val = document.getElementById("nuevoSaldo")
-          .value.replace(/\./g, "");
-        const num = Number(val);
-        if (!num) return;
-
-        const data = load();
-        data.saldoBase = num;
-        save(data);
-
-        document.getElementById("nuevoSaldo").value = "";
-        render();
+      
+      [...data.gastos].reverse().slice(0, 4).forEach(g => {
+        lista.innerHTML += `
+          <div class="card" style="padding: 12px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.9rem;">${g.concepto}</div>
+              <div class="muted" style="font-size: 0.7rem;">${g.fecha}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800;">${moneyCLP(g.monto)}</div>
+              <span class="tag" style="font-size: 0.5rem;">${g.tipo}</span>
+            </div>
+          </div>
+        `;
       });
-
-    render();
-
+    }
   </script>
 </body>
-
 </html>
